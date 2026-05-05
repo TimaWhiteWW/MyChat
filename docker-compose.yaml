@@ -1,0 +1,194 @@
+version: '3'
+
+volumes:
+  db-data:
+  minio-data:
+  es-data:
+  redis-data:
+  es-logs:
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: postgres
+    restart: no
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "${DATABASE_PORT}:5432"
+    volumes:
+      - ./MyChat-UserMicroservice/src/main/resources/db-init:/docker-entrypoint-initdb.d
+      - db-data:/var/lib/postgresql/data
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    restart: on-failure
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    restart: on-failure
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: no
+    environment:
+      MINIO_ROOT_USER: miniominio
+      MINIO_ROOT_PASSWORD: miniominio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # WebUI теперь точно на 9001
+    volumes:
+      - minio-data:/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: elasticsearch
+    restart: no
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - es-logs:/usr/share/elasticsearch/logs
+    environment:
+      - "xpack.security.enabled=false"
+      - "discovery.type=single-node"
+      - "network.host=0.0.0.0"
+
+  es-init:
+    image: curlimages/curl:7.85.0
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./mapping.json:/scripts/mapping.json:ro
+      - ./create_indices.sh:/scripts/create_indices.sh:ro
+    entrypoint: [ "/bin/sh", "/scripts/create_indices.sh" ]
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: no
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  usermicroservice:
+    build:
+      context: ./MyChat-UserMicroservice
+      dockerfile: Dockerfile
+    container_name: usermicroservice
+    restart: no
+    depends_on:
+      - db
+      - kafka
+      - minio
+    env_file:
+      - .env
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: mychat
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: Rts28022007
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MINIO_URL: http://minio:9000
+      MAIN_PORT: 8082
+      KAFKA_HOST: kafka
+    ports:
+      - "${PORT_USER_MICROSERVICE}:${PORT_USER_MICROSERVICE}"
+
+  swipe-microservice:
+    build:
+      context: ./MyChat-Swipes
+      dockerfile: Dockerfile
+    container_name: swipe-microservice
+    depends_on:
+      - redis
+      - db
+      - kafka
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: "postgres"
+      DATABASE_PASSWORD: "Rts28022007"
+      MAIN_PORT: "8084"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      KAFKA_HOST: "kafka:9092"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+    ports:
+      - "${PORT_SWIPE}:${PORT_SWIPE}"
+
+  recommendation-microservice:
+    build:
+      context: /MyChat-Recomendation
+      dockerfile: Dockerfile
+    container_name: recommendation
+    depends_on:
+      - db
+      - kafka
+      - redis
+      - elasticsearch
+    environment:
+      DATABASE_HOST: "db"
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: "mychat"
+      DATABASE_USER: "postgres"
+      DATABASE_PASSWORD: "Rts28022007"
+      DATABASE_CURRENT_SCHEMA: "public"
+
+      # Kafka settings
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      KAFKA_SUBSCRIBED_TOPICS: "kb-tree"
+
+      # Elasticsearch settings
+      ELASTICSEARCH_HOST: "elasticsearch"
+
+      REDIS_HOST: "redis"
+
+      MAIN_PORT: 8083
+    ports:
+      - "${PORT_RECOMMENDATION}:${PORT_RECOMMENDATION}"
+
+  mychat-authentication:
+    build:
+      context: /MyChat-Auth
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: mychat
+      DATABASE_CURRENT_SCHEMA: public
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: Rts28022007
+      MAIN_PORT: 8081
+    ports:
+      - "${PORT_AUTH}:${PORT_AUTH}"

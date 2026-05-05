@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: MyChat-Notification
+  kafka:
+    server: localhost:9092
+    topics: notification-topic
+    group-id: 1
+    trusted-packages: "*"
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+server:
+  port: 8085

@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: MyChat-Swipe
+  datasource:
+    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/mychat?currentSchema=public
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+server:
+  port: ${MAIN_PORT}
+
+kafka:
+  bootstrap-servers: ${KAFKA_HOST}
+  topic: notification-topic
+
+beauty-adjust:
+  likeUniversalAdjust: 0.05
+  skipUniversalAdjust: 0.01
+  saveBatchSize: 1000
+
+redis-props:
+  expirationHours: 24
+
+postgres-props:
+  expirationDate: 10

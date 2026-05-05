@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: MyChat-Recomendation
+  config:
+    import: optional:file:.env[.properties]
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    topics: ${KAFKA_SUBSCRIBED_TOPICS}
+    consumer:
+      group-id: 1
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+  datasource:
+      url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?currentSchema=${DATABASE_CURRENT_SCHEMA}
+      username: ${DATABASE_USER}
+      password: ${DATABASE_PASSWORD}
+      driver-class-name: org.postgresql.Driver
+      port: ${DATABASE_PORT}
+      host: ${DATABASE_HOST}
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+
+elasticsearch-props:
+  min-shard-number: 1
+  max-shard-number: 5
+
+server:
+  port: ${MAIN_PORT}
+  tomcat:
+    threads:
+      max: 50
+      min-spare: 20
+      max-queue-capacity: 10000
+
+
