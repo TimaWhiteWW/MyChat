@@ -16,6 +16,7 @@ public class User {
     private String name;
     private String tag;
     private String password;
+    private Boolean emailVerified = false;
 
     @Override
     public String toString(){

@@ -1,17 +1,37 @@
 spring:
   application:
     name: MyChat-Notification
+  datasource:
+    url: jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/${DATABASE_NAME:mychat}?currentSchema=${DATABASE_CURRENT_SCHEMA:public}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:Rts28022007}
+    driver-class-name: org.postgresql.Driver
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS:false}
   kafka:
-    server: localhost:9092
-    topics: notification-topic
-    group-id: 1
+    server: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    topics: ${KAFKA_SUBSCRIBED_TOPICS:notification-topic}
+    group-id: ${KAFKA_GROUP_ID:notification-service}
     trusted-packages: "*"
     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 server:
-  port: 8085
+  port: ${MAIN_PORT:8085}
+
+mychat:
+  kafka:
+    enabled: ${MYCHAT_KAFKA_ENABLED:true}

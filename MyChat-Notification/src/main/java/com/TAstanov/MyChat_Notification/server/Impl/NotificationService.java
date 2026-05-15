@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NotificationService {
 
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
-    private final RedisTemplate<Object, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
     public SseEmitter subscribe(String userId) {

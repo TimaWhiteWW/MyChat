@@ -145,7 +145,7 @@ services:
 
   recommendation-microservice:
     build:
-      context: /MyChat-Recomendation
+      context: ./MyChat-Recomendation
       dockerfile: Dockerfile
     container_name: recommendation
     depends_on:
@@ -176,7 +176,7 @@ services:
 
   mychat-authentication:
     build:
-      context: /MyChat-Auth
+      context: ./MyChat-Auth
       dockerfile: Dockerfile
     depends_on:
       - db

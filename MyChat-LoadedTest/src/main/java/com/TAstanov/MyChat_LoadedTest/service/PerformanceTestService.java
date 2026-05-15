@@ -2,6 +2,7 @@ package com.TAstanov.MyChat_LoadedTest.service;
 
 import com.TAstanov.MyChat_LoadedTest.entity.LikeDto;
 import com.TAstanov.MyChat_LoadedTest.entity.Profile;
+import com.TAstanov.MyChat_LoadedTest.entity.RegisterRequest;
 import com.TAstanov.MyChat_LoadedTest.entity.UserProfile;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -53,6 +54,20 @@ class PerformanceTestRunnable implements Runnable{
 
 
             UserProfile userProfile = UserProfile.generateSingleUserProfile();
+
+            RegisterRequest registerRequest = new RegisterRequest();
+            registerRequest.setName(userProfile.getName());
+            registerRequest.setEmail(userProfile.getEmail());
+            registerRequest.setTag(userProfile.getTag());
+            registerRequest.setPassword("Password123!");
+            registerRequest.setPasswordConfirmation("Password123!");
+
+            webClient.post()
+                    .uri("http://localhost:8081/api/v1/auth/register")
+                    .bodyValue(registerRequest)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
 
             // 3) Построение multipart/form-data
             MultipartBodyBuilder builder = new MultipartBodyBuilder();

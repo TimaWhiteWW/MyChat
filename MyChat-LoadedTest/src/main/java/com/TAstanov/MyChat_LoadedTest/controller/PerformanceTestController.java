@@ -15,7 +15,7 @@ public class PerformanceTestController {
     private final PerformanceTestService performanceTestService;
 
     @GetMapping
-    public void test(@RequestParam Long retrieves){
+    public void test(@RequestParam Long co){
         performanceTestService.performanceTest(retrieves);
     }
 

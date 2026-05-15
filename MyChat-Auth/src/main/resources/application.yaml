@@ -11,6 +11,18 @@ spring:
     password: ${DATABASE_PASSWORD:Rts28022007}
     driver-class-name: org.postgresql.Driver
 
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS:false}
+
 server:
   port: ${MAIN_PORT:8081}
 

@@ -2,22 +2,22 @@ spring:
   application:
     name: MyChat-Swipe
   datasource:
-    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/mychat?currentSchema=public
-    username: ${DATABASE_USER}
-    password: ${DATABASE_PASSWORD}
+    url: jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/${DATABASE_NAME:mychat}?currentSchema=${DATABASE_CURRENT_SCHEMA:public}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:Rts28022007}
     driver-class-name: org.postgresql.Driver
   kafka:
-    bootstrap-servers: ${KAFKA_HOST}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 server:
-  port: ${MAIN_PORT}
+  port: ${MAIN_PORT:8084}
 
 kafka:
-  bootstrap-servers: ${KAFKA_HOST}
-  topic: notification-topic
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  topic: ${KAFKA_NOTIFICATION_TOPIC:notification-topic}
 
 beauty-adjust:
   likeUniversalAdjust: 0.05

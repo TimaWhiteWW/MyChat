@@ -6,4 +6,6 @@ public interface AuthService {
 
     boolean register(User user);
 
+    boolean verifyEmail(String email, String code);
+
 }

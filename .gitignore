@@ -1,3 +1,6 @@
 
 # ignore environment files
 *.env
+.mvn-repo/
+.m2/
+notification-local.log

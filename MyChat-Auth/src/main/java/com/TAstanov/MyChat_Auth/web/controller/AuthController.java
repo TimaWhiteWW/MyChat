@@ -6,6 +6,7 @@ import com.TAstanov.MyChat_Auth.service.AuthService;
 import com.TAstanov.MyChat_Auth.service.JwtTokenService;
 import com.TAstanov.MyChat_Auth.web.dto.LogoutRequest;
 import com.TAstanov.MyChat_Auth.web.dto.RegisterRequest;
+import com.TAstanov.MyChat_Auth.web.dto.VerifyEmailRequest;
 import com.TAstanov.MyChat_Auth.web.dto.mapper.UserMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,14 @@ public class AuthController {
         }
         User user = userMapper.toEntity(registerRequest);
         return authService.register(user);
+    }
+
+    @PostMapping("/verify")
+    public boolean verify(@Valid @RequestBody VerifyEmailRequest verifyEmailRequest, BindingResult bindingResult){
+        if(bindingResult.hasErrors()){
+            throw new RuntimeException();
+        }
+        return authService.verifyEmail(verifyEmailRequest.getEmail(), verifyEmailRequest.getCode());
     }
 
     @GetMapping("/login")

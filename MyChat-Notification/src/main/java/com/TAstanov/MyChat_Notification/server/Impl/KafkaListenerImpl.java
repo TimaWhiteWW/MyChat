@@ -8,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import reactor.kafka.receiver.KafkaReceiver;
 import reactor.kafka.receiver.ReceiverRecord;
@@ -17,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(prefix = "mychat.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class KafkaListenerImpl implements KafkaListener {
 
     private final KafkaReceiver<String, Object> kafkaReceiver;

@@ -84,6 +84,9 @@ public class JwtTokenServiceImpl implements JwtTokenService {
     private void validateUserCredentials(String email, String password) {
         User user = authRepository.findByEmail(email)
                 .orElseThrow(() -> new UserIsNotPresent("User not found"));
+        if (!Boolean.TRUE.equals(user.getEmailVerified())) {
+            throw new IllegalArgumentException("Email is not verified");
+        }
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new PasswordMismatch("Invalid password");
         }

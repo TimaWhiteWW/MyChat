@@ -4,6 +4,7 @@ import com.TAstanov.MyChat_Auth.domain.exception.EmailAlreadyExists;
 import com.TAstanov.MyChat_Auth.domain.user.User;
 import com.TAstanov.MyChat_Auth.repository.AuthRepository;
 import com.TAstanov.MyChat_Auth.service.AuthService;
+import com.TAstanov.MyChat_Auth.service.EmailVerificationService;
 import com.TAstanov.MyChat_Auth.service.KafkaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +16,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuthRepository authRepository;
     private final KafkaService kafkaService;
+    private final EmailVerificationService emailVerificationService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -22,6 +24,18 @@ public class AuthServiceImpl implements AuthService {
         checkIfEmailExists(user.getEmail());
         String encodedPassword = encodePassword(user.getPassword());
         user.setPassword(encodedPassword);
+        user.setEmailVerified(false);
+        saveUser(user);
+        emailVerificationService.createAndSendCode(user);
+        return true;
+    }
+
+    @Override
+    public boolean verifyEmail(String email, String code) {
+        emailVerificationService.verify(email, code);
+        User user = authRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setEmailVerified(true);
         saveUser(user);
         sendUserToKafka(user);
         return true;

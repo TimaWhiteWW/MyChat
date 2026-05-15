@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -30,7 +31,13 @@ public class AuthConfig {
     public SecurityFilterChain filterChain(final HttpSecurity httpSecurity) {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable) // Отключаем CSRF защиту
-                .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())) // Включаем CORS
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration configuration = new CorsConfiguration();
+                    configuration.setAllowedOriginPatterns(List.of("*"));
+                    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                    configuration.setAllowedHeaders(List.of("*"));
+                    return configuration;
+                }))
                 .httpBasic(AbstractHttpConfigurer::disable) // Отключаем HTTP Basic аутентификацию
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Отключаем сессии

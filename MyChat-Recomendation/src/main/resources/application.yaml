@@ -5,8 +5,8 @@ spring:
     import: optional:file:.env[.properties]
 
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
-    topics: ${KAFKA_SUBSCRIBED_TOPICS}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    topics: ${KAFKA_SUBSCRIBED_TOPICS:kb-tree}
     consumer:
       group-id: 1
       auto-offset-reset: earliest
@@ -16,29 +16,28 @@ spring:
         spring.json.trusted.packages: "*"
 
   datasource:
-      url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?currentSchema=${DATABASE_CURRENT_SCHEMA}
-      username: ${DATABASE_USER}
-      password: ${DATABASE_PASSWORD}
+      url: jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/${DATABASE_NAME:mychat}?currentSchema=${DATABASE_CURRENT_SCHEMA:public}
+      username: ${DATABASE_USER:postgres}
+      password: ${DATABASE_PASSWORD:Rts28022007}
       driver-class-name: org.postgresql.Driver
-      port: ${DATABASE_PORT}
-      host: ${DATABASE_HOST}
+      port: ${DATABASE_PORT:5432}
+      host: ${DATABASE_HOST:localhost}
   elasticsearch:
-    uris: ${ELASTICSEARCH_HOST}
+    uris: ${ELASTICSEARCH_HOST:http://localhost:9200}
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 elasticsearch-props:
   min-shard-number: 1
   max-shard-number: 5
 
 server:
-  port: ${MAIN_PORT}
+  port: ${MAIN_PORT:8083}
   tomcat:
     threads:
       max: 50
       min-spare: 20
       max-queue-capacity: 10000
-
 

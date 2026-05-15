@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MyChat</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="authView" class="auth-shell">
+    <section class="auth-panel">
+      <div class="brand">
+        <span class="brand-mark">M</span>
+        <div>
+          <h1>MyChat</h1>
+          <p>Профили, лайки, матчи и личные сообщения</p>
+        </div>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="tab active" data-auth-tab="login">Вход</button>
+        <button class="tab" data-auth-tab="register">Регистрация</button>
+      </div>
+
+      <form id="loginForm" class="auth-form">
+        <label>Email<input id="loginEmail" type="email" required placeholder="you@example.com"></label>
+        <label>Пароль<input id="loginPassword" type="password" required placeholder="Пароль"></label>
+        <button type="submit">Войти</button>
+      </form>
+
+      <form id="registerForm" class="auth-form hidden">
+        <label>Имя<input id="registerName" required placeholder="Анна"></label>
+        <label>Email<input id="registerEmail" type="email" required placeholder="anna@example.com"></label>
+        <label>Пароль<input id="registerPassword" type="password" required minlength="6" placeholder="Минимум 6 символов"></label>
+        <button type="submit">Создать аккаунт</button>
+      </form>
+
+      <form id="verifyForm" class="auth-form hidden">
+        <label>Код из письма<input id="verifyCode" required inputmode="numeric" maxlength="6" placeholder="000000"></label>
+        <button type="submit">Подтвердить почту</button>
+      </form>
+    </section>
+  </main>
+
+  <main id="appView" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand small">
+        <span class="brand-mark">M</span>
+        <div>
+          <h2>MyChat</h2>
+          <p id="currentUserLabel"></p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-view="profile">Профиль</button>
+        <button class="nav-item" data-view="discover">Поиск</button>
+        <button class="nav-item" data-view="matches">Лайки</button>
+        <button class="nav-item" data-view="chat">Чат <span id="chatBadge" class="badge hidden">0</span></button>
+      </nav>
+
+      <button id="logoutBtn" class="ghost">Выйти</button>
+    </aside>
+
+    <section class="workspace">
+      <section id="profileView" class="screen">
+        <header class="screen-head">
+          <div>
+            <h1>Профиль</h1>
+            <p>Основная анкета, которую увидят другие пользователи.</p>
+          </div>
+          <button id="saveProfileBtn">Сохранить</button>
+        </header>
+
+        <div class="profile-layout">
+          <div class="profile-preview">
+            <div id="profileAvatar" class="photo">M</div>
+            <strong id="profilePreviewName">Профиль</strong>
+            <span id="profilePreviewMeta" class="meta"></span>
+          </div>
+
+          <div class="form-grid">
+            <label>Имя<input id="profileName"></label>
+            <label>Возраст<input id="profileAge" type="number" min="18" max="99" value="21"></label>
+            <label>Город<input id="profileCity" value="Москва"></label>
+            <label>Пол<select id="profileGender"><option>MALE</option><option>FEMALE</option></select></label>
+            <label>Интересы<input id="profileInterests" placeholder="музыка, кино, спорт"></label>
+            <label>Фото URL<input id="profilePhoto" placeholder="https://..."></label>
+            <label>Фото с устройства<input id="profilePhotoFile" type="file" accept="image/*"></label>
+            <label class="wide">О себе<textarea id="profileBio" placeholder="Расскажи пару слов о себе"></textarea></label>
+          </div>
+        </div>
+      </section>
+
+      <section id="discoverView" class="screen hidden">
+        <header class="screen-head">
+          <div>
+            <h1>Поиск</h1>
+            <p>Ставь лайки анкетам. Взаимный лайк откроет чат.</p>
+          </div>
+          <button id="seedBtn" class="secondary">Обновить</button>
+        </header>
+        <div id="discoverCard" class="person-card"></div>
+      </section>
+
+      <section id="matchesView" class="screen hidden">
+        <header class="screen-head">
+          <div>
+            <h1>Лайки и матчи</h1>
+            <p>Здесь собраны пользователи, с которыми можно начать диалог.</p>
+          </div>
+        </header>
+        <div id="matchesList" class="list"></div>
+      </section>
+
+      <section id="chatView" class="screen hidden">
+        <header class="screen-head">
+          <div>
+            <h1>Чат</h1>
+            <p id="chatTitle">Выбери пользователя из списка.</p>
+          </div>
+        </header>
+        <div class="chat-layout">
+          <div id="chatMatches" class="list small"></div>
+          <div class="chat-panel">
+            <div id="messages" class="messages"></div>
+            <form id="messageForm" class="message-form">
+              <input id="messageInput" placeholder="Написать сообщение..." autocomplete="off">
+              <button type="submit">Отправить</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>

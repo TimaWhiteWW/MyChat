@@ -47,6 +47,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private void uploadImages(List<MultipartFile> multipartFiles, String userTag) {  // Используем tag вместо id
+        if (multipartFiles == null || multipartFiles.isEmpty()) {
+            return;
+        }
         multipartFiles.forEach(file -> imageService.uploadImage(file, userTag)); // Используем tag
     }
 }

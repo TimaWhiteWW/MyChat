@@ -3,6 +3,7 @@ package com.TAstanov.MyChat_Notification.config;
 import com.TAstanov.MyChat_Notification.server.props.KafkaProperties;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import reactor.kafka.receiver.KafkaReceiver;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "mychat.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class KafkaConfig {
 
     private final KafkaProperties kafkaProperties;
