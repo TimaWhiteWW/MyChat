@@ -1,20 +1,53 @@
-const API_HOST = window.location.hostname || "localhost";
 const BASES = {
-  auth: `http://${API_HOST}:8081/api/v1/auth`,
-  user: `http://${API_HOST}:8082/api/v1/self`,
-  recommendation: `http://${API_HOST}:8083/api/v1/recommendation`,
-  swipe: `http://${API_HOST}:8084/api/v1/swipe`,
-  notification: `http://${API_HOST}:8085/api/v1/notification`,
-  chat: `http://${API_HOST}:8085/api/v1/chat`
+  auth: "/api/v1/auth",
+  user: "/api/v1/self",
+  recommendation: "/api/v1/recommendation",
+  swipe: "/api/v1/swipe",
+  notification: "/api/v1/notification",
+  chat: "/api/v1/chat"
 };
 
-const HOBBIES = ["SPORTS", "TRAVELING", "MUSIC", "MOVIES", "GAMING", "READING", "COOKING", "PHOTOGRAPHY", "ART", "DANCING", "FITNESS", "HIKING", "TECHNOLOGY", "BOARD_GAMES", "LANGUAGES", "CARS", "FASHION", "PETS", "WRITING", "INVESTING", "MEDITATION", "SCIENCE", "CHESS"];
-const PROFESSIONS = ["SOFTWARE_ENGINEER", "DATA_SCIENTIST", "WEB_DEVELOPER", "DOCTOR", "NURSE", "PSYCHOLOGIST", "LAWYER", "TEACHER", "ARCHITECT", "FINANCIAL_ANALYST", "ENTREPRENEUR", "PROJECT_MANAGER", "JOURNALIST", "MUSICIAN", "PHOTOGRAPHER", "CHEF", "PILOT", "SCIENTIST", "ATHLETE", "MODEL", "UNEMPLOYED"];
+const HOBBIES = [
+  "SPORTS", "TRAVELING", "MUSIC", "MOVIES", "GAMING", "READING", "COOKING", "PHOTOGRAPHY", "ART", "DANCING",
+  "FITNESS", "HIKING", "CYCLING", "SWIMMING", "YOGA", "FISHING", "CAMPING", "TECHNOLOGY", "BOARD_GAMES",
+  "VOLUNTEERING", "LANGUAGES", "CARS", "FASHION", "PETS", "GARDENING", "WRITING", "DIY", "ASTRONOMY",
+  "MARTIAL_ARTS", "TENNIS", "BASKETBALL", "FOOTBALL", "SKIING", "SNOWBOARDING", "SKATEBOARDING", "SURFING",
+  "SCUBA_DIVING", "ROCK_CLIMBING", "HORSE_RIDING", "ARCHERY", "ESPORTS", "PODCASTS", "THEATER", "OPERA",
+  "MAGIC", "ASTROLOGY", "TATTOOS", "BODYBUILDING", "INVESTING", "MEDITATION", "MINDFULNESS", "HISTORY",
+  "SCIENCE", "PHILOSOPHY", "POLITICS", "WOODWORKING", "LEATHERCRAFT", "METALWORKING", "KNITTING",
+  "CROCHETING", "MAKEUP", "JEWELRY_MAKING", "MODEL_BUILDING", "RC_CARS", "DRONES", "AVIATION",
+  "SPACE_EXPLORATION", "STANDUP_COMEDY", "STREET_ART", "VLOGGING", "BLOGGING", "GRAPHIC_DESIGN",
+  "VIDEO_EDITING", "ANIME", "K_POP", "COSPLAY", "TAROT", "ESCAPE_ROOMS", "PAINTBALL", "LASER_TAG",
+  "WINE_TASTING", "COFFEE_CULTURE", "CRAFT_BEER", "COCKTAIL_MAKING", "CHESS", "POKER", "MAGIC_THE_GATHERING",
+  "DUNGEONS_AND_DRAGONS", "PARKOUR", "FREE_RUNNING", "SKYDIVING", "BUNGEE_JUMPING", "HOT_AIR_BALLOONING",
+  "TRAMPOLINING"
+];
+
+const PROFESSIONS = [
+  "SOFTWARE_ENGINEER", "DATA_SCIENTIST", "SYSTEM_ADMINISTRATOR", "CYBER_SECURITY_SPECIALIST", "GAME_DEVELOPER",
+  "MOBILE_DEVELOPER", "WEB_DEVELOPER", "CLOUD_ENGINEER", "NETWORK_ENGINEER", "IT_SUPPORT", "DEVOPS_ENGINEER",
+  "MACHINE_LEARNING_ENGINEER", "AI_RESEARCHER", "BLOCKCHAIN_DEVELOPER", "DOCTOR", "SURGEON", "NURSE",
+  "PARAMEDIC", "DENTIST", "PHARMACIST", "PSYCHOLOGIST", "PSYCHIATRIST", "PHYSIOTHERAPIST", "VETERINARIAN",
+  "LAWYER", "JUDGE", "POLICE_OFFICER", "TEACHER", "PROFESSOR", "RESEARCHER", "TRANSLATOR", "ARCHITECT",
+  "CIVIL_ENGINEER", "ELECTRICAL_ENGINEER", "MECHANICAL_ENGINEER", "ACCOUNTANT", "FINANCIAL_ANALYST",
+  "INVESTMENT_BANKER", "ECONOMIST", "ENTREPRENEUR", "BUSINESS_ANALYST", "PROJECT_MANAGER",
+  "MARKETING_SPECIALIST", "SALES_MANAGER", "HR_MANAGER", "JOURNALIST", "WRITER", "EDITOR", "ACTOR", "MUSICIAN",
+  "SINGER", "DANCER", "PHOTOGRAPHER", "VIDEOGRAPHER", "GRAPHIC_DESIGNER", "UX_UI_DESIGNER", "CHEF", "BARISTA",
+  "PILOT", "SCIENTIST", "BIOLOGIST", "CHEMIST", "PHYSICIST", "ATHLETE", "COACH", "PERSONAL_TRAINER",
+  "MECHANIC", "ELECTRICIAN", "MODEL", "INFLUENCER", "MAKEUP_ARTIST", "TRAVEL_AGENT", "TOUR_GUIDE",
+  "REAL_ESTATE_AGENT", "STREAMER", "UNEMPLOYED"
+];
+
 const SESSION_KEY = "mychat.real.session";
+const CHATS_KEY = "mychat.real.chats";
+const AVATAR_KEY = "mychat.real.avatar";
+const DEFAULT_LOCATION = "POINT (37.6173 55.7558)";
 
 let session = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+let knownChats = JSON.parse(localStorage.getItem(CHATS_KEY) || "[]");
 let currentPartnerTag = "";
 let eventSource = null;
+let avatarDataUrl = localStorage.getItem(AVATAR_KEY) || "";
 
 const $ = (id) => document.getElementById(id);
 
@@ -50,7 +83,7 @@ function selectedValues(id) {
 }
 
 function fillMultiSelect(id, values, defaults = []) {
-  $(id).innerHTML = values.map((value) => `<option value="${value}" ${defaults.includes(value) ? "selected" : ""}>${value}</option>`).join("");
+  $(id).innerHTML = values.map((value) => `<option value="${value}" ${defaults.includes(value) ? "selected" : ""}>${value.replaceAll("_", " ")}</option>`).join("");
 }
 
 function showAuth() {
@@ -61,10 +94,12 @@ function showAuth() {
 function showApp() {
   $("authView").classList.add("hidden");
   $("appView").classList.remove("hidden");
-  $("currentUserLabel").textContent = `${session.tag} · ${session.email}`;
+  $("currentUserLabel").textContent = `@${session.tag}`;
   $("profileTag").value = session.tag;
   $("profileEmail").value = session.email;
   $("profileName").value = session.name || "";
+  updateProfilePreview();
+  renderChatList();
   startNotifications();
 }
 
@@ -84,6 +119,7 @@ function switchView(name) {
   document.querySelectorAll(".screen").forEach((screen) => screen.classList.add("hidden"));
   $(`${name}View`).classList.remove("hidden");
   document.querySelectorAll(".nav-item").forEach((button) => button.classList.toggle("active", button.dataset.view === name));
+  if (name === "chat") renderChatList();
 }
 
 async function register(event) {
@@ -113,25 +149,15 @@ async function register(event) {
   saveSession({ email, tag, name: $("registerName").value.trim() });
   $("verifyForm").classList.remove("hidden");
   $("registerForm").classList.add("hidden");
-  toast("Аккаунт создан. Подтверди email кодом.");
+  toast("Введите код подтверждения из письма.");
 }
 
 function validatePassword(password, passwordConfirmation) {
-  if (password !== passwordConfirmation) {
-    return "Пароли не совпадают.";
-  }
-  if (password.length < 10) {
-    return "Пароль должен быть не короче 10 символов.";
-  }
-  if (!/[A-ZА-Я]/.test(password)) {
-    return "Пароль должен содержать заглавную букву.";
-  }
-  if (!/\d/.test(password)) {
-    return "Пароль должен содержать цифру.";
-  }
-  if (!/[^a-zA-Zа-яА-Я0-9]/.test(password)) {
-    return "Пароль должен содержать спецсимвол, например ! или #.";
-  }
+  if (password !== passwordConfirmation) return "Пароли не совпадают.";
+  if (password.length < 10) return "Пароль должен быть не короче 10 символов.";
+  if (!/[A-ZА-Я]/.test(password)) return "Пароль должен содержать заглавную букву.";
+  if (!/\d/.test(password)) return "Пароль должен содержать цифру.";
+  if (!/[^a-zA-Zа-яА-Я0-9]/.test(password)) return "Пароль должен содержать спецсимвол, например ! или #.";
   return "";
 }
 
@@ -153,7 +179,32 @@ async function login(event) {
   const tokens = await request(`${BASES.auth}/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
   saveSession({ email, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken, tag: session?.tag || email.split("@")[0] });
   showApp();
-  toast("Вход выполнен.");
+}
+
+function updateProfilePreview() {
+  const name = $("profileName").value.trim() || session?.name || "Профиль";
+  const age = $("profileAge").value || "";
+  const city = $("profileCity").value.trim();
+  $("profilePreviewName").textContent = name;
+  $("profilePreviewMeta").textContent = [age, city].filter(Boolean).join(" · ");
+  $("sidebarAvatar").innerHTML = avatarDataUrl ? `<img src="${avatarDataUrl}" alt="">` : initials(name);
+  $("profileAvatarPreview").innerHTML = avatarDataUrl ? `<img src="${avatarDataUrl}" alt="">` : initials(name);
+}
+
+function initials(value) {
+  return (value || session?.tag || "M").slice(0, 1).toUpperCase();
+}
+
+function handleAvatarPreview() {
+  const file = $("profilePictures").files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    avatarDataUrl = String(reader.result);
+    localStorage.setItem(AVATAR_KEY, avatarDataUrl);
+    updateProfilePreview();
+  };
+  reader.readAsDataURL(file);
 }
 
 async function saveProfile() {
@@ -172,7 +223,7 @@ async function saveProfile() {
     aboutMe: $("profileAboutMe").value.trim(),
     city: $("profileCity").value.trim(),
     country: $("profileCountry").value.trim(),
-    location: $("profileLocation").value.trim(),
+    location: DEFAULT_LOCATION,
     personalityExtraversion: $("personalityExtraversion").value,
     personalityOpenness: $("personalityOpenness").value,
     personalityConscientiousness: $("personalityConscientiousness").value,
@@ -187,11 +238,13 @@ async function saveProfile() {
 
   await request(`${BASES.user}/create`, { method: "POST", body: form });
   saveSession({ tag: fields.tag, email: fields.email, name: fields.name });
-  $("currentUserLabel").textContent = `${session.tag} · ${session.email}`;
+  $("currentUserLabel").textContent = `@${session.tag}`;
+  updateProfilePreview();
+  await savePreferences(false);
   toast("Профиль сохранен.");
 }
 
-async function savePreferences() {
+async function savePreferences(showToast = true) {
   await request(`${BASES.user}/preferences`, {
     method: "POST",
     body: JSON.stringify({
@@ -208,7 +261,7 @@ async function savePreferences() {
       distance: Number($("distance").value)
     })
   });
-  toast("Предпочтения сохранены.");
+  if (showToast) toast("Предпочтения сохранены.");
 }
 
 async function loadRecommendations() {
@@ -219,19 +272,20 @@ async function loadRecommendations() {
 function renderRecommendations(list) {
   const container = $("recommendationsList");
   if (!list.length) {
-    container.innerHTML = `<div class="person-card"><h3>Нет рекомендаций</h3><p class="meta">Создай профиль и предпочтения, затем обнови список.</p></div>`;
+    container.innerHTML = `<div class="empty-state"><h3>Пока никого нет</h3><p>Когда другой пользователь зарегистрируется, заполнит профиль и подойдет под фильтры, он появится здесь.</p></div>`;
     return;
   }
   container.innerHTML = list.map((profile) => `
     <article class="person-card">
+      <div class="mini-avatar">${initials(profile.name || profile.tag)}</div>
       <h3>${profile.name || profile.tag} ${profile.surname || ""}</h3>
-      <p class="meta">@${profile.tag} · ${profile.age || "-"} · ${profile.city || ""}, ${profile.country || ""}</p>
+      <p class="meta">@${profile.tag} · ${profile.age || "-"} · ${profile.city || ""}</p>
       <p>${profile.aboutMe || "Описание не заполнено."}</p>
-      <div class="tags">${(profile.hobby || []).slice(0, 6).map((item) => `<span class="tag">${item}</span>`).join("")}</div>
+      <div class="tags">${(profile.hobby || []).slice(0, 8).map((item) => `<span class="tag">${item.replaceAll("_", " ")}</span>`).join("")}</div>
       <div class="card-actions">
-        <button class="pass" type="button" data-pass="${profile.tag}">Пропуск</button>
+        <button class="pass" type="button" data-pass="${profile.tag}">Пропустить</button>
         <button class="accent" type="button" data-like="${profile.tag}">Лайк</button>
-        <button type="button" data-chat="${profile.tag}">Чат</button>
+        <button type="button" data-chat="${profile.tag}">Написать</button>
       </div>
     </article>
   `).join("");
@@ -245,14 +299,38 @@ async function swipe(action, targetTag) {
     method: "POST",
     body: JSON.stringify({ userTag: session.tag, likedUserTag: targetTag })
   });
+  if (action === "like") addChat(targetTag);
   toast(action === "like" ? `Лайк отправлен @${targetTag}` : `Профиль @${targetTag} пропущен`);
 }
 
-async function openDialog(tag = $("chatPartnerTag").value.trim()) {
-  if (!tag) return toast("Укажи тег собеседника.");
+function addChat(tag) {
+  if (!tag || knownChats.includes(tag)) return;
+  knownChats = [tag, ...knownChats];
+  localStorage.setItem(CHATS_KEY, JSON.stringify(knownChats));
+  renderChatList();
+}
+
+function renderChatList() {
+  const list = $("chatList");
+  if (!list) return;
+  if (!knownChats.length) {
+    list.innerHTML = `<div class="empty-chat">Чаты появятся после лайка или нажатия "Написать" в рекомендациях.</div>`;
+    return;
+  }
+  list.innerHTML = knownChats.map((tag) => `
+    <button class="dialog-item ${tag === currentPartnerTag ? "active" : ""}" type="button" data-dialog="${tag}">
+      <span class="mini-avatar">${initials(tag)}</span>
+      <span>@${tag}</span>
+    </button>
+  `).join("");
+  list.querySelectorAll("[data-dialog]").forEach((button) => button.addEventListener("click", () => openDialog(button.dataset.dialog)));
+}
+
+async function openDialog(tag) {
   currentPartnerTag = tag;
-  $("chatPartnerTag").value = tag;
+  addChat(tag);
   switchView("chat");
+  $("chatTitle").textContent = `@${tag}`;
   const messages = await request(`${BASES.chat}/dialog?userTag=${encodeURIComponent(session.tag)}&partnerTag=${encodeURIComponent(tag)}`);
   renderMessages(messages || []);
 }
@@ -269,7 +347,7 @@ function renderMessages(messages) {
 async function sendMessage(event) {
   event.preventDefault();
   const text = $("messageInput").value.trim();
-  if (!currentPartnerTag) return toast("Сначала открой диалог.");
+  if (!currentPartnerTag) return toast("Выберите чат.");
   if (!text) return;
   await request(`${BASES.chat}/send`, {
     method: "POST",
@@ -282,28 +360,7 @@ async function sendMessage(event) {
 function startNotifications() {
   if (eventSource) eventSource.close();
   eventSource = new EventSource(`${BASES.notification}/subscribe?userTag=${encodeURIComponent(session.tag)}`);
-  eventSource.onmessage = (event) => {
-    $("notificationStream").textContent = `${new Date().toLocaleTimeString()} · ${event.data}\n${$("notificationStream").textContent}`;
-  };
-}
-
-async function checkServices() {
-  const checks = [
-    ["Auth", `${BASES.auth}/login?email=healthcheck@example.com&password=bad`],
-    ["User", `${BASES.user}/preferences`],
-    ["Recommendation", `${BASES.recommendation}/selectPartnerStack?tag=${encodeURIComponent(session?.tag || "health")}`],
-    ["Swipe", `${BASES.swipe}/like`],
-    ["Notification", `${BASES.chat}/dialog?userTag=health&partnerTag=check`]
-  ];
-  $("serviceStatus").innerHTML = "";
-  for (const [name, url] of checks) {
-    try {
-      await fetch(url, { method: name === "Recommendation" ? "POST" : "GET" });
-      $("serviceStatus").insertAdjacentHTML("beforeend", `<div class="status-card"><strong>${name}</strong><span class="status-ok">доступен</span></div>`);
-    } catch (error) {
-      $("serviceStatus").insertAdjacentHTML("beforeend", `<div class="status-card"><strong>${name}</strong><span class="status-bad">нет ответа</span></div>`);
-    }
-  }
+  eventSource.onmessage = (event) => toast(event.data);
 }
 
 document.querySelectorAll("[data-auth-tab]").forEach((button) => button.addEventListener("click", () => switchAuthTab(button.dataset.authTab)));
@@ -312,11 +369,10 @@ $("registerForm").addEventListener("submit", (event) => register(event).catch((e
 $("verifyForm").addEventListener("submit", (event) => verify(event).catch((error) => toast(error.message)));
 $("loginForm").addEventListener("submit", (event) => login(event).catch((error) => toast(error.message)));
 $("saveProfileBtn").addEventListener("click", () => saveProfile().catch((error) => toast(error.message)));
-$("savePreferencesBtn").addEventListener("click", () => savePreferences().catch((error) => toast(error.message)));
 $("loadRecommendationsBtn").addEventListener("click", () => loadRecommendations().catch((error) => toast(error.message)));
-$("openDialogBtn").addEventListener("click", () => openDialog().catch((error) => toast(error.message)));
 $("messageForm").addEventListener("submit", (event) => sendMessage(event).catch((error) => toast(error.message)));
-$("checkServicesBtn").addEventListener("click", () => checkServices());
+$("profilePictures").addEventListener("change", handleAvatarPreview);
+["profileName", "profileAge", "profileCity"].forEach((id) => $(id).addEventListener("input", updateProfilePreview));
 $("logoutBtn").addEventListener("click", () => {
   localStorage.removeItem(SESSION_KEY);
   if (eventSource) eventSource.close();

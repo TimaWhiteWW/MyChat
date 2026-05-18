@@ -218,6 +218,8 @@ services:
     build:
       context: ./MyChat-Auth
       dockerfile: Dockerfile
+    env_file:
+      - .env
     depends_on:
       - db
       - kafka
@@ -230,5 +232,11 @@ services:
       DATABASE_USER: postgres
       DATABASE_PASSWORD: Rts28022007
       MAIN_PORT: 8081
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH}
+      MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS}
     ports:
       - "${PORT_AUTH}:${PORT_AUTH}"

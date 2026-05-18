@@ -13,7 +13,6 @@
         <span class="brand-mark">M</span>
         <div>
           <h1>MyChat</h1>
-          <p>Полноценный клиент для микросервисов MyChat</p>
         </div>
       </div>
 
@@ -38,7 +37,6 @@
       </form>
 
       <form id="verifyForm" class="auth-form hidden">
-        <p class="hint">Если SMTP не настроен, код подтверждения смотри в логах контейнера `mychat-authentication`.</p>
         <label>Код подтверждения<input id="verifyCode" required placeholder="000000"></label>
         <button type="submit">Подтвердить email</button>
       </form>
@@ -47,8 +45,8 @@
 
   <main id="appView" class="app hidden">
     <aside class="sidebar">
-      <div class="brand small">
-        <span class="brand-mark">M</span>
+      <div class="account">
+        <div id="sidebarAvatar" class="avatar">M</div>
         <div>
           <h2>MyChat</h2>
           <p id="currentUserLabel"></p>
@@ -57,10 +55,8 @@
 
       <nav class="nav">
         <button class="nav-item active" data-view="profile" type="button">Профиль</button>
-        <button class="nav-item" data-view="preferences" type="button">Предпочтения</button>
         <button class="nav-item" data-view="recommendations" type="button">Рекомендации</button>
         <button class="nav-item" data-view="chat" type="button">Чат</button>
-        <button class="nav-item" data-view="diagnostics" type="button">Сервисы</button>
       </nav>
 
       <button id="logoutBtn" class="ghost" type="button">Выйти</button>
@@ -71,58 +67,77 @@
         <header class="screen-head">
           <div>
             <h1>Профиль</h1>
-            <p>Анкета сохраняется в UserMicroservice, изображения уходят в MinIO, профиль публикуется в Kafka.</p>
           </div>
-          <button id="saveProfileBtn" type="button">Сохранить профиль</button>
+          <button id="saveProfileBtn" type="button">Сохранить</button>
         </header>
 
-        <div class="form-grid">
-          <label>Тег<input id="profileTag" required></label>
-          <label>Email<input id="profileEmail" type="email" required></label>
-          <label>Имя<input id="profileName" required></label>
-          <label>Фамилия<input id="profileSurname" required></label>
-          <label>Телефон<input id="profilePhone" placeholder="+79990000000"></label>
-          <label>Возраст<input id="profileAge" type="number" min="18" max="150" value="21"></label>
-          <label>Пол<select id="profileGender"><option>MALE</option><option>FEMALE</option></select></label>
-          <label>Вес, кг<input id="profileWeight" type="number" min="30" max="250" value="70"></label>
-          <label>Рост, м<input id="profileHeight" type="number" min="1" max="3" step="0.01" value="1.75"></label>
-          <label>Доход<input id="profileEarnings" type="number" min="0" value="0"></label>
-          <label>Город<input id="profileCity" required value="Moscow"></label>
-          <label>Страна<input id="profileCountry" required value="Russia"></label>
-          <label>Координаты<input id="profileLocation" value="POINT (37.6173 55.7558)"></label>
-          <label>Хобби<select id="profileHobby" multiple></select></label>
-          <label>Профессии<select id="profileProfession" multiple></select></label>
-          <label>Фото<input id="profilePictures" type="file" accept="image/*" multiple></label>
-          <label>Экстраверсия<input id="personalityExtraversion" type="range" min="0" max="10" step="0.5" value="5"></label>
-          <label>Открытость<input id="personalityOpenness" type="range" min="0" max="10" step="0.5" value="5"></label>
-          <label>Добросовестность<input id="personalityConscientiousness" type="range" min="0" max="10" step="0.5" value="5"></label>
-          <label>Семья<input id="lifeValueFamily" type="range" min="0" max="10" step="0.5" value="5"></label>
-          <label>Карьера<input id="lifeValueCareer" type="range" min="0" max="10" step="0.5" value="5"></label>
-          <label>Активность<input id="activityLevel" type="range" min="0" max="10" step="0.5" value="5"></label>
-          <label class="wide">О себе<textarea id="profileAboutMe" maxlength="500"></textarea></label>
-        </div>
-      </section>
+        <div class="profile-page">
+          <section class="profile-card">
+            <div id="profileAvatarPreview" class="profile-avatar">M</div>
+            <label class="file-button">
+              Выбрать фото
+              <input id="profilePictures" type="file" accept="image/*">
+            </label>
+            <strong id="profilePreviewName">Ваш профиль</strong>
+            <span id="profilePreviewMeta" class="meta"></span>
+          </section>
 
-      <section id="preferencesView" class="screen hidden">
-        <header class="screen-head">
-          <div>
-            <h1>Предпочтения</h1>
-            <p>Фильтры сохраняются в UserMicroservice и используются Recommendation-сервисом.</p>
-          </div>
-          <button id="savePreferencesBtn" type="button">Сохранить предпочтения</button>
-        </header>
+          <section class="profile-form">
+            <div class="form-section">
+              <h3>Основное</h3>
+              <div class="form-grid compact">
+                <label>Тег<input id="profileTag" required></label>
+                <label>Email<input id="profileEmail" type="email" required></label>
+                <label>Имя<input id="profileName" required></label>
+                <label>Фамилия<input id="profileSurname" required></label>
+                <label>Возраст<input id="profileAge" type="number" min="18" max="150" value="21"></label>
+                <label>Пол<select id="profileGender"><option>MALE</option><option>FEMALE</option></select></label>
+                <label>Город<input id="profileCity" required value="Moscow"></label>
+                <label>Страна<input id="profileCountry" required value="Russia"></label>
+                <label>Телефон<input id="profilePhone" placeholder="+79990000000"></label>
+              </div>
+            </div>
 
-        <div class="form-grid">
-          <label>Хобби партнера<select id="preferencesHobby" multiple></select></label>
-          <label>Профессии партнера<select id="preferencesProfessions" multiple></select></label>
-          <label>Мин. доход<input id="minEarnings" type="number" min="0" value="0"></label>
-          <label>Мин. BMI<input id="minBMI" type="number" min="0" max="100" step="0.1" value="0"></label>
-          <label>Макс. BMI<input id="maxBMI" type="number" min="0" max="100" step="0.1" value="100"></label>
-          <label>Мин. рост<input id="minHeight" type="number" min="0" max="3" step="0.01" value="1.4"></label>
-          <label>Макс. рост<input id="maxHeight" type="number" min="0" max="3" step="0.01" value="2.2"></label>
-          <label>Мин. возраст<input id="minAge" type="number" min="0" max="150" value="18"></label>
-          <label>Макс. возраст<input id="maxAge" type="number" min="0" max="150" value="60"></label>
-          <label>Дистанция, км<input id="distance" type="number" min="0" max="40000" value="100"></label>
+            <div class="form-section">
+              <h3>О себе</h3>
+              <div class="form-grid compact">
+                <label>Вес, кг<input id="profileWeight" type="number" min="30" max="250" value="70"></label>
+                <label>Рост, м<input id="profileHeight" type="number" min="1" max="3" step="0.01" value="1.75"></label>
+                <label>Доход<input id="profileEarnings" type="number" min="0" value="0"></label>
+                <label>Хобби<select id="profileHobby" multiple></select></label>
+                <label>Профессии<select id="profileProfession" multiple></select></label>
+                <label class="wide">Описание<textarea id="profileAboutMe" maxlength="500"></textarea></label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3>Кого ищем</h3>
+              <div class="form-grid compact">
+                <label>Хобби<select id="preferencesHobby" multiple></select></label>
+                <label>Профессии<select id="preferencesProfessions" multiple></select></label>
+                <label>Возраст от<input id="minAge" type="number" min="18" max="150" value="18"></label>
+                <label>Возраст до<input id="maxAge" type="number" min="18" max="150" value="60"></label>
+                <label>Рост от<input id="minHeight" type="number" min="0" max="3" step="0.01" value="1.4"></label>
+                <label>Рост до<input id="maxHeight" type="number" min="0" max="3" step="0.01" value="2.2"></label>
+                <label>Мин. доход<input id="minEarnings" type="number" min="0" value="0"></label>
+                <label>Мин. BMI<input id="minBMI" type="number" min="0" max="100" step="0.1" value="0"></label>
+                <label>Макс. BMI<input id="maxBMI" type="number" min="0" max="100" step="0.1" value="100"></label>
+                <label>Дистанция, км<input id="distance" type="number" min="0" max="40000" value="100"></label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3>Характер</h3>
+              <div class="form-grid compact sliders">
+                <label>Экстраверсия<input id="personalityExtraversion" type="range" min="0" max="10" step="0.5" value="5"></label>
+                <label>Открытость<input id="personalityOpenness" type="range" min="0" max="10" step="0.5" value="5"></label>
+                <label>Добросовестность<input id="personalityConscientiousness" type="range" min="0" max="10" step="0.5" value="5"></label>
+                <label>Семья<input id="lifeValueFamily" type="range" min="0" max="10" step="0.5" value="5"></label>
+                <label>Карьера<input id="lifeValueCareer" type="range" min="0" max="10" step="0.5" value="5"></label>
+                <label>Активность<input id="activityLevel" type="range" min="0" max="10" step="0.5" value="5"></label>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
 
@@ -130,7 +145,6 @@
         <header class="screen-head">
           <div>
             <h1>Рекомендации</h1>
-            <p>Список приходит из Recommendation-сервиса. Лайк и пропуск отправляются в Swipe-сервис.</p>
           </div>
           <button id="loadRecommendationsBtn" type="button">Обновить</button>
         </header>
@@ -141,15 +155,11 @@
         <header class="screen-head">
           <div>
             <h1>Чат</h1>
-            <p>Диалоги обслуживает Notification-сервис. Сейчас чат открывается по тегу пользователя.</p>
+            <p id="chatTitle" class="meta"></p>
           </div>
         </header>
         <div class="chat-layout">
-          <div class="chat-tools">
-            <label>Тег собеседника<input id="chatPartnerTag" placeholder="partnerTag"></label>
-            <button id="openDialogBtn" type="button">Открыть диалог</button>
-            <div id="notificationStream" class="stream">Уведомления появятся здесь.</div>
-          </div>
+          <aside id="chatList" class="dialog-list"></aside>
           <div class="chat-panel">
             <div id="messages" class="messages"></div>
             <form id="messageForm" class="message-form">
@@ -158,17 +168,6 @@
             </form>
           </div>
         </div>
-      </section>
-
-      <section id="diagnosticsView" class="screen hidden">
-        <header class="screen-head">
-          <div>
-            <h1>Сервисы</h1>
-            <p>Быстрая проверка доступности контейнеров через реальные API.</p>
-          </div>
-          <button id="checkServicesBtn" type="button">Проверить</button>
-        </header>
-        <div id="serviceStatus" class="status-grid"></div>
       </section>
     </section>
   </main>
