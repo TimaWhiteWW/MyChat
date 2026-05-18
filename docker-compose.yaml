@@ -174,6 +174,46 @@ services:
     ports:
       - "${PORT_RECOMMENDATION}:${PORT_RECOMMENDATION}"
 
+  notification-microservice:
+    build:
+      context: ./MyChat-Notification
+      dockerfile: Dockerfile
+    container_name: notification-microservice
+    depends_on:
+      - db
+      - kafka
+      - redis
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: mychat
+      DATABASE_CURRENT_SCHEMA: public
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: Rts28022007
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_SUBSCRIBED_TOPICS: notification-topic
+      KAFKA_GROUP_ID: notification-service
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MAIN_PORT: 8085
+    ports:
+      - "${PORT_NOTIFICATION}:${PORT_NOTIFICATION}"
+
+  frontend:
+    build:
+      context: ./web-client
+      dockerfile: Dockerfile
+    container_name: mychat-frontend
+    restart: no
+    depends_on:
+      - mychat-authentication
+      - usermicroservice
+      - recommendation-microservice
+      - swipe-microservice
+      - notification-microservice
+    ports:
+      - "${PORT_FRONTEND}:80"
+
   mychat-authentication:
     build:
       context: ./MyChat-Auth

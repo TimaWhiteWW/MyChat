@@ -13,31 +13,34 @@
         <span class="brand-mark">M</span>
         <div>
           <h1>MyChat</h1>
-          <p>Профили, лайки, матчи и личные сообщения</p>
+          <p>Полноценный клиент для микросервисов MyChat</p>
         </div>
       </div>
 
       <div class="auth-tabs">
-        <button class="tab active" data-auth-tab="login">Вход</button>
-        <button class="tab" data-auth-tab="register">Регистрация</button>
+        <button class="tab active" data-auth-tab="login" type="button">Вход</button>
+        <button class="tab" data-auth-tab="register" type="button">Регистрация</button>
       </div>
 
       <form id="loginForm" class="auth-form">
-        <label>Email<input id="loginEmail" type="email" required placeholder="you@example.com"></label>
-        <label>Пароль<input id="loginPassword" type="password" required placeholder="Пароль"></label>
+        <label>Email<input id="loginEmail" type="email" autocomplete="email" required></label>
+        <label>Пароль<input id="loginPassword" type="password" autocomplete="current-password" required></label>
         <button type="submit">Войти</button>
       </form>
 
       <form id="registerForm" class="auth-form hidden">
-        <label>Имя<input id="registerName" required placeholder="Анна"></label>
-        <label>Email<input id="registerEmail" type="email" required placeholder="anna@example.com"></label>
-        <label>Пароль<input id="registerPassword" type="password" required minlength="6" placeholder="Минимум 6 символов"></label>
+        <label>Имя<input id="registerName" required></label>
+        <label>Тег<input id="registerTag" required minlength="3" maxlength="20" placeholder="timawhte1"></label>
+        <label>Email<input id="registerEmail" type="email" autocomplete="email" required></label>
+        <label>Пароль<input id="registerPassword" type="password" autocomplete="new-password" required minlength="10"></label>
+        <label>Повтор пароля<input id="registerPasswordConfirmation" type="password" autocomplete="new-password" required minlength="10"></label>
         <button type="submit">Создать аккаунт</button>
       </form>
 
       <form id="verifyForm" class="auth-form hidden">
-        <label>Код из письма<input id="verifyCode" required inputmode="numeric" maxlength="6" placeholder="000000"></label>
-        <button type="submit">Подтвердить почту</button>
+        <p class="hint">Если SMTP не настроен, код подтверждения смотри в логах контейнера `mychat-authentication`.</p>
+        <label>Код подтверждения<input id="verifyCode" required placeholder="000000"></label>
+        <button type="submit">Подтвердить email</button>
       </form>
     </section>
   </main>
@@ -53,13 +56,14 @@
       </div>
 
       <nav class="nav">
-        <button class="nav-item active" data-view="profile">Профиль</button>
-        <button class="nav-item" data-view="discover">Поиск</button>
-        <button class="nav-item" data-view="matches">Лайки</button>
-        <button class="nav-item" data-view="chat">Чат <span id="chatBadge" class="badge hidden">0</span></button>
+        <button class="nav-item active" data-view="profile" type="button">Профиль</button>
+        <button class="nav-item" data-view="preferences" type="button">Предпочтения</button>
+        <button class="nav-item" data-view="recommendations" type="button">Рекомендации</button>
+        <button class="nav-item" data-view="chat" type="button">Чат</button>
+        <button class="nav-item" data-view="diagnostics" type="button">Сервисы</button>
       </nav>
 
-      <button id="logoutBtn" class="ghost">Выйти</button>
+      <button id="logoutBtn" class="ghost" type="button">Выйти</button>
     </aside>
 
     <section class="workspace">
@@ -67,69 +71,104 @@
         <header class="screen-head">
           <div>
             <h1>Профиль</h1>
-            <p>Основная анкета, которую увидят другие пользователи.</p>
+            <p>Анкета сохраняется в UserMicroservice, изображения уходят в MinIO, профиль публикуется в Kafka.</p>
           </div>
-          <button id="saveProfileBtn">Сохранить</button>
+          <button id="saveProfileBtn" type="button">Сохранить профиль</button>
         </header>
 
-        <div class="profile-layout">
-          <div class="profile-preview">
-            <div id="profileAvatar" class="photo">M</div>
-            <strong id="profilePreviewName">Профиль</strong>
-            <span id="profilePreviewMeta" class="meta"></span>
-          </div>
-
-          <div class="form-grid">
-            <label>Имя<input id="profileName"></label>
-            <label>Возраст<input id="profileAge" type="number" min="18" max="99" value="21"></label>
-            <label>Город<input id="profileCity" value="Москва"></label>
-            <label>Пол<select id="profileGender"><option>MALE</option><option>FEMALE</option></select></label>
-            <label>Интересы<input id="profileInterests" placeholder="музыка, кино, спорт"></label>
-            <label>Фото URL<input id="profilePhoto" placeholder="https://..."></label>
-            <label>Фото с устройства<input id="profilePhotoFile" type="file" accept="image/*"></label>
-            <label class="wide">О себе<textarea id="profileBio" placeholder="Расскажи пару слов о себе"></textarea></label>
-          </div>
+        <div class="form-grid">
+          <label>Тег<input id="profileTag" required></label>
+          <label>Email<input id="profileEmail" type="email" required></label>
+          <label>Имя<input id="profileName" required></label>
+          <label>Фамилия<input id="profileSurname" required></label>
+          <label>Телефон<input id="profilePhone" placeholder="+79990000000"></label>
+          <label>Возраст<input id="profileAge" type="number" min="18" max="150" value="21"></label>
+          <label>Пол<select id="profileGender"><option>MALE</option><option>FEMALE</option></select></label>
+          <label>Вес, кг<input id="profileWeight" type="number" min="30" max="250" value="70"></label>
+          <label>Рост, м<input id="profileHeight" type="number" min="1" max="3" step="0.01" value="1.75"></label>
+          <label>Доход<input id="profileEarnings" type="number" min="0" value="0"></label>
+          <label>Город<input id="profileCity" required value="Moscow"></label>
+          <label>Страна<input id="profileCountry" required value="Russia"></label>
+          <label>Координаты<input id="profileLocation" value="POINT (37.6173 55.7558)"></label>
+          <label>Хобби<select id="profileHobby" multiple></select></label>
+          <label>Профессии<select id="profileProfession" multiple></select></label>
+          <label>Фото<input id="profilePictures" type="file" accept="image/*" multiple></label>
+          <label>Экстраверсия<input id="personalityExtraversion" type="range" min="0" max="10" step="0.5" value="5"></label>
+          <label>Открытость<input id="personalityOpenness" type="range" min="0" max="10" step="0.5" value="5"></label>
+          <label>Добросовестность<input id="personalityConscientiousness" type="range" min="0" max="10" step="0.5" value="5"></label>
+          <label>Семья<input id="lifeValueFamily" type="range" min="0" max="10" step="0.5" value="5"></label>
+          <label>Карьера<input id="lifeValueCareer" type="range" min="0" max="10" step="0.5" value="5"></label>
+          <label>Активность<input id="activityLevel" type="range" min="0" max="10" step="0.5" value="5"></label>
+          <label class="wide">О себе<textarea id="profileAboutMe" maxlength="500"></textarea></label>
         </div>
       </section>
 
-      <section id="discoverView" class="screen hidden">
+      <section id="preferencesView" class="screen hidden">
         <header class="screen-head">
           <div>
-            <h1>Поиск</h1>
-            <p>Ставь лайки анкетам. Взаимный лайк откроет чат.</p>
+            <h1>Предпочтения</h1>
+            <p>Фильтры сохраняются в UserMicroservice и используются Recommendation-сервисом.</p>
           </div>
-          <button id="seedBtn" class="secondary">Обновить</button>
+          <button id="savePreferencesBtn" type="button">Сохранить предпочтения</button>
         </header>
-        <div id="discoverCard" class="person-card"></div>
+
+        <div class="form-grid">
+          <label>Хобби партнера<select id="preferencesHobby" multiple></select></label>
+          <label>Профессии партнера<select id="preferencesProfessions" multiple></select></label>
+          <label>Мин. доход<input id="minEarnings" type="number" min="0" value="0"></label>
+          <label>Мин. BMI<input id="minBMI" type="number" min="0" max="100" step="0.1" value="0"></label>
+          <label>Макс. BMI<input id="maxBMI" type="number" min="0" max="100" step="0.1" value="100"></label>
+          <label>Мин. рост<input id="minHeight" type="number" min="0" max="3" step="0.01" value="1.4"></label>
+          <label>Макс. рост<input id="maxHeight" type="number" min="0" max="3" step="0.01" value="2.2"></label>
+          <label>Мин. возраст<input id="minAge" type="number" min="0" max="150" value="18"></label>
+          <label>Макс. возраст<input id="maxAge" type="number" min="0" max="150" value="60"></label>
+          <label>Дистанция, км<input id="distance" type="number" min="0" max="40000" value="100"></label>
+        </div>
       </section>
 
-      <section id="matchesView" class="screen hidden">
+      <section id="recommendationsView" class="screen hidden">
         <header class="screen-head">
           <div>
-            <h1>Лайки и матчи</h1>
-            <p>Здесь собраны пользователи, с которыми можно начать диалог.</p>
+            <h1>Рекомендации</h1>
+            <p>Список приходит из Recommendation-сервиса. Лайк и пропуск отправляются в Swipe-сервис.</p>
           </div>
+          <button id="loadRecommendationsBtn" type="button">Обновить</button>
         </header>
-        <div id="matchesList" class="list"></div>
+        <div id="recommendationsList" class="cards"></div>
       </section>
 
       <section id="chatView" class="screen hidden">
         <header class="screen-head">
           <div>
             <h1>Чат</h1>
-            <p id="chatTitle">Выбери пользователя из списка.</p>
+            <p>Диалоги обслуживает Notification-сервис. Сейчас чат открывается по тегу пользователя.</p>
           </div>
         </header>
         <div class="chat-layout">
-          <div id="chatMatches" class="list small"></div>
+          <div class="chat-tools">
+            <label>Тег собеседника<input id="chatPartnerTag" placeholder="partnerTag"></label>
+            <button id="openDialogBtn" type="button">Открыть диалог</button>
+            <div id="notificationStream" class="stream">Уведомления появятся здесь.</div>
+          </div>
           <div class="chat-panel">
             <div id="messages" class="messages"></div>
             <form id="messageForm" class="message-form">
-              <input id="messageInput" placeholder="Написать сообщение..." autocomplete="off">
+              <input id="messageInput" placeholder="Сообщение..." autocomplete="off">
               <button type="submit">Отправить</button>
             </form>
           </div>
         </div>
+      </section>
+
+      <section id="diagnosticsView" class="screen hidden">
+        <header class="screen-head">
+          <div>
+            <h1>Сервисы</h1>
+            <p>Быстрая проверка доступности контейнеров через реальные API.</p>
+          </div>
+          <button id="checkServicesBtn" type="button">Проверить</button>
+        </header>
+        <div id="serviceStatus" class="status-grid"></div>
       </section>
     </section>
   </main>
