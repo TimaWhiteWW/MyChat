@@ -93,6 +93,12 @@ async function register(event) {
   const email = $("registerEmail").value.trim();
   const tag = $("registerTag").value.trim();
 
+  const passwordError = validatePassword(password, passwordConfirmation);
+  if (passwordError) {
+    toast(passwordError);
+    return;
+  }
+
   await request(`${BASES.auth}/register`, {
     method: "POST",
     body: JSON.stringify({
@@ -108,6 +114,25 @@ async function register(event) {
   $("verifyForm").classList.remove("hidden");
   $("registerForm").classList.add("hidden");
   toast("Аккаунт создан. Подтверди email кодом.");
+}
+
+function validatePassword(password, passwordConfirmation) {
+  if (password !== passwordConfirmation) {
+    return "Пароли не совпадают.";
+  }
+  if (password.length < 10) {
+    return "Пароль должен быть не короче 10 символов.";
+  }
+  if (!/[A-ZА-Я]/.test(password)) {
+    return "Пароль должен содержать заглавную букву.";
+  }
+  if (!/\d/.test(password)) {
+    return "Пароль должен содержать цифру.";
+  }
+  if (!/[^a-zA-Zа-яА-Я0-9]/.test(password)) {
+    return "Пароль должен содержать спецсимвол, например ! или #.";
+  }
+  return "";
 }
 
 async function verify(event) {

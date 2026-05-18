@@ -11,7 +11,11 @@ import com.TAstanov.MyChat_Auth.web.dto.mapper.UserMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -25,7 +29,7 @@ public class AuthController {
     @PostMapping("/register")
     public boolean register(@Valid @RequestBody RegisterRequest registerRequest, BindingResult bindingResult){
         if(bindingResult.hasErrors()){
-            throw new RuntimeException();
+            throw new IllegalArgumentException(formatValidationErrors(bindingResult));
         }
         User user = userMapper.toEntity(registerRequest);
         return authService.register(user);
@@ -34,7 +38,7 @@ public class AuthController {
     @PostMapping("/verify")
     public boolean verify(@Valid @RequestBody VerifyEmailRequest verifyEmailRequest, BindingResult bindingResult){
         if(bindingResult.hasErrors()){
-            throw new RuntimeException();
+            throw new IllegalArgumentException(formatValidationErrors(bindingResult));
         }
         return authService.verifyEmail(verifyEmailRequest.getEmail(), verifyEmailRequest.getCode());
     }
@@ -56,5 +60,17 @@ public class AuthController {
         return newTokenPair;
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> badRequest(IllegalArgumentException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    private String formatValidationErrors(BindingResult bindingResult) {
+        return bindingResult.getAllErrors()
+                .stream()
+                .map(error -> error.getDefaultMessage() == null ? "Invalid request" : error.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+    }
 
 }
