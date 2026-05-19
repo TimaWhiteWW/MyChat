@@ -18,4 +18,9 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
             """, nativeQuery = true)
     void saveUserLocation(String userId, String city, String country, String location);
 
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM user_locations WHERE user_tag = :userTag", nativeQuery = true)
+    void deleteByUserTag(String userTag);
+
 }

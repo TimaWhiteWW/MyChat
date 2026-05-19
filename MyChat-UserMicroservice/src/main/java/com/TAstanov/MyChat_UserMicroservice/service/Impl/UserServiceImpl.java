@@ -37,19 +37,28 @@ public class UserServiceImpl implements UserService {
 
     private Profile saveProfile(UserProfileDto userProfileDto) {
         Profile profile = userProfileMapper.toEntity(userProfileDto);
-        return userRepository.save(profile); // Сохраняем и возвращаем профиль
+        userRepository.findByTag(profile.getTag())
+                .or(() -> userRepository.findByEmail(profile.getEmail()))
+                .ifPresent(existingProfile -> profile.setId(existingProfile.getId()));
+        return userRepository.save(profile);
     }
 
     private void saveLocation(UserProfileDto userProfileDto, Profile profile) {
         Location location = userProfileMapper.toLocation(userProfileDto);
-        location.setUserTag(profile.getTag());  // Используем tag вместо id
-        locationRepository.saveUserLocation(profile.getTag(), location.getCity(), location.getCountry(), location.getLocation().toString());
+        location.setUserTag(profile.getTag());
+        locationRepository.deleteByUserTag(profile.getTag());
+        locationRepository.saveUserLocation(
+                profile.getTag(),
+                location.getCity(),
+                location.getCountry(),
+                location.getLocation().toString()
+        );
     }
 
-    private void uploadImages(List<MultipartFile> multipartFiles, String userTag) {  // Используем tag вместо id
+    private void uploadImages(List<MultipartFile> multipartFiles, String userTag) {
         if (multipartFiles == null || multipartFiles.isEmpty()) {
             return;
         }
-        multipartFiles.forEach(file -> imageService.uploadImage(file, userTag)); // Используем tag
+        multipartFiles.forEach(file -> imageService.uploadImage(file, userTag));
     }
 }
