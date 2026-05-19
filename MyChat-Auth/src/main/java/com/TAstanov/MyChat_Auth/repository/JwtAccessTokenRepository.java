@@ -14,7 +14,7 @@ public interface JwtAccessTokenRepository extends JpaRepository<JwtAccessToken, 
 
     @Modifying
     @Query(value = """
-           SELECT * FROM jwt_access_token
+           DELETE FROM jwt_access_token
            WHERE expiration_date < :now""", nativeQuery = true)
     void deleteExpiredTokens(@Param("now")LocalDateTime now);
 

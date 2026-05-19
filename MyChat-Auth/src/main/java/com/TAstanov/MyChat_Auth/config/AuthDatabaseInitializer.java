@@ -35,5 +35,19 @@ public class AuthDatabaseInitializer implements ApplicationRunner {
                     created_at TIMESTAMP NOT NULL
                 )
                 """);
+        jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS jwt_access_token (
+                    id UUID PRIMARY KEY,
+                    access_token TEXT NOT NULL,
+                    expiration_date TIMESTAMP
+                )
+                """);
+        jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS jwt_refresh_token (
+                    id UUID PRIMARY KEY,
+                    refresh_token TEXT NOT NULL,
+                    expiration_date TIMESTAMP
+                )
+                """);
     }
 }

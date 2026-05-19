@@ -3,6 +3,8 @@ package com.TAstanov.MyChat_Auth.web.controller;
 import com.TAstanov.MyChat_Auth.domain.jwtResponse.JwtResponse;
 import com.TAstanov.MyChat_Auth.domain.user.User;
 import com.TAstanov.MyChat_Auth.domain.exception.EmailAlreadyExists;
+import com.TAstanov.MyChat_Auth.domain.exception.PasswordMismatch;
+import com.TAstanov.MyChat_Auth.domain.exception.UserIsNotPresent;
 import com.TAstanov.MyChat_Auth.service.AuthService;
 import com.TAstanov.MyChat_Auth.service.JwtTokenService;
 import com.TAstanov.MyChat_Auth.web.dto.LogoutRequest;
@@ -78,6 +80,12 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> dataIntegrityViolation() {
         return Map.of("error", "Email or tag already exists");
+    }
+
+    @ExceptionHandler({PasswordMismatch.class, UserIsNotPresent.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, String> unauthorized(RuntimeException exception) {
+        return Map.of("error", exception.getMessage());
     }
 
     private String formatValidationErrors(BindingResult bindingResult) {
