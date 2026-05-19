@@ -22,6 +22,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean register(User user) {
         checkIfEmailExists(user.getEmail());
+        checkIfTagExists(user.getTag());
         String encodedPassword = encodePassword(user.getPassword());
         user.setPassword(encodedPassword);
         user.setEmailVerified(false);
@@ -44,6 +45,12 @@ public class AuthServiceImpl implements AuthService {
     private void checkIfEmailExists(String email) {
         authRepository.findByEmail(email).ifPresent(existingEmail -> {
             throw new EmailAlreadyExists("Email already exists");
+        });
+    }
+
+    private void checkIfTagExists(String tag) {
+        authRepository.findByTag(tag).ifPresent(existingTag -> {
+            throw new IllegalArgumentException("Tag already exists");
         });
     }
 

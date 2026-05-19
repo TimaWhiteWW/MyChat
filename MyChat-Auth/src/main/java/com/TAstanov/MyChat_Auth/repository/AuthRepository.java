@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface AuthRepository extends JpaRepository<User, String> {
     Optional<User> findByEmail(String email);
+    Optional<User> findByTag(String tag);
 
     @Query(value = "SELECT * FROM user_auth WHERE email = :email AND password = :password", nativeQuery = true)
     Optional<User> checkPassword(@Param("email") String email, @Param("password") String password);

@@ -2,6 +2,7 @@ package com.TAstanov.MyChat_Auth.web.controller;
 
 import com.TAstanov.MyChat_Auth.domain.jwtResponse.JwtResponse;
 import com.TAstanov.MyChat_Auth.domain.user.User;
+import com.TAstanov.MyChat_Auth.domain.exception.EmailAlreadyExists;
 import com.TAstanov.MyChat_Auth.service.AuthService;
 import com.TAstanov.MyChat_Auth.service.JwtTokenService;
 import com.TAstanov.MyChat_Auth.web.dto.LogoutRequest;
@@ -9,6 +10,7 @@ import com.TAstanov.MyChat_Auth.web.dto.RegisterRequest;
 import com.TAstanov.MyChat_Auth.web.dto.VerifyEmailRequest;
 import com.TAstanov.MyChat_Auth.web.dto.mapper.UserMapper;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
 import org.springframework.http.HttpStatus;
@@ -64,6 +66,18 @@ public class AuthController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> badRequest(IllegalArgumentException exception) {
         return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(EmailAlreadyExists.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> emailAlreadyExists(EmailAlreadyExists exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> dataIntegrityViolation() {
+        return Map.of("error", "Email or tag already exists");
     }
 
     private String formatValidationErrors(BindingResult bindingResult) {
