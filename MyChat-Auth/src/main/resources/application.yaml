@@ -31,6 +31,14 @@ spring:
 server:
   port: ${MAIN_PORT:8081}
 
+email:
+  provider: ${EMAIL_PROVIDER:smtp}
+
+brevo:
+  api-key: ${BREVO_API_KEY:}
+  sender-email: ${BREVO_SENDER_EMAIL:}
+  sender-name: ${BREVO_SENDER_NAME:MyChat}
+
 jwt:
   secretKey: dXNlLXN0cm9uZy1hbmQtdmFsaWQtYmFzZTY0LWtleQ==
   accessLiveTime: 86400
