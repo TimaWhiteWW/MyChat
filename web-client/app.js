@@ -48,6 +48,7 @@ let knownChats = JSON.parse(localStorage.getItem(CHATS_KEY) || "[]");
 let currentPartnerTag = "";
 let eventSource = null;
 let avatarDataUrl = localStorage.getItem(AVATAR_KEY) || "";
+let pendingRegistrationPassword = "";
 
 const $ = (id) => document.getElementById(id);
 
@@ -146,6 +147,7 @@ async function register(event) {
     })
   });
 
+  pendingRegistrationPassword = password;
   saveSession({ email, tag, name: $("registerName").value.trim() });
   $("verifyForm").classList.remove("hidden");
   $("registerForm").classList.add("hidden");
@@ -168,6 +170,14 @@ async function verify(event) {
     body: JSON.stringify({ email: session.email, code: $("verifyCode").value.trim() })
   });
   toast("Email подтвержден. Теперь можно войти.");
+  if (pendingRegistrationPassword) {
+    const tokens = await request(`${BASES.auth}/login?email=${encodeURIComponent(session.email)}&password=${encodeURIComponent(pendingRegistrationPassword)}`);
+    pendingRegistrationPassword = "";
+    saveSession({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
+    showApp();
+    switchView("profile");
+    return;
+  }
   switchAuthTab("login");
   $("loginEmail").value = session.email;
 }
